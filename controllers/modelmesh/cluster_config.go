@@ -19,7 +19,7 @@ import (
 
 	"k8s.io/apimachinery/pkg/types"
 
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -109,7 +109,7 @@ func calculateConstraintData(rts []api.ServingRuntime) []byte {
 
 	m := make(map[string]interface{})
 	for _, rt := range rts {
-		if !rt.Disabled() && rt.IsMultiModelRuntime() {
+		if !rt.Spec.IsDisabled() && rt.Spec.IsMultiModelRuntime() {
 			labels := GetServingRuntimeSupportedModelTypeLabelSet(&rt)
 			// treat each label as a separate model type
 			for l := range labels {

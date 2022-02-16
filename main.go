@@ -51,8 +51,8 @@ import (
 
 	monitoringv1 "github.com/prometheus-operator/prometheus-operator/pkg/apis/monitoring/v1"
 
+	servingv1beta1 "github.com/kserve/kserve/pkg/apis/serving/v1beta1"
 	servingv1alpha1 "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
-	servingv1beta1 "github.com/kserve/modelmesh-serving/apis/serving/v1beta1"
 	"github.com/kserve/modelmesh-serving/controllers"
 	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 	"github.com/kserve/modelmesh-serving/pkg/mmesh"
@@ -90,7 +90,6 @@ func init() {
 	}
 	_ = batchv1.AddToScheme(scheme)
 	_ = servingv1alpha1.AddToScheme(scheme)
-	_ = servingv1beta1.AddToScheme(scheme)
 	_ = monitoringv1.AddToScheme(scheme)
 	// +kubebuilder:scaffold:scheme
 }

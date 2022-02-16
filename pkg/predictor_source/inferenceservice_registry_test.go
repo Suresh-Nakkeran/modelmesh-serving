@@ -16,8 +16,8 @@ package predictor_source
 import (
 	"testing"
 
+	"github.com/kserve/kserve/pkg/apis/serving/v1beta1"
 	"github.com/kserve/modelmesh-serving/apis/serving/common"
-	"github.com/kserve/modelmesh-serving/apis/serving/v1beta1"
 
 	"github.com/stretchr/testify/assert"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -29,11 +29,11 @@ func TestBuildBasePredictorFromInferenceService_ModelSpecSimple(t *testing.T) {
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				v1beta1.DeploymentModeAnnotation: v1beta1.MMDeploymentModeVal,
+				DeploymentModeAnnotation: MMDeploymentModeVal,
 			},
 		},
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				Model: &v1beta1.ModelSpec{
 					ModelFormat: v1beta1.ModelFormat{
 						Name: formatName,
@@ -56,11 +56,11 @@ func TestBuildBasePredictorFromInferenceService_ModelSpecRuntime(t *testing.T) {
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				v1beta1.DeploymentModeAnnotation: v1beta1.MMDeploymentModeVal,
+				DeploymentModeAnnotation: MMDeploymentModeVal,
 			},
 		},
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				Model: &v1beta1.ModelSpec{
 					ModelFormat: v1beta1.ModelFormat{
 						Name:    formatName,
@@ -88,12 +88,12 @@ func TestBuildBasePredictorFromInferenceService_FrameworkSpec(t *testing.T) {
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				v1beta1.DeploymentModeAnnotation: v1beta1.MMDeploymentModeVal,
-				v1beta1.RuntimeAnnotation:        runtimeName,
+				DeploymentModeAnnotation: MMDeploymentModeVal,
+				RuntimeAnnotation:        runtimeName,
 			},
 		},
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				SKLearn: &v1beta1.PredictorExtensionSpec{
 					StorageURI: &uri,
 				},
@@ -113,7 +113,7 @@ func TestBuildBasePredictorFromInferenceService_InvalidSpec(t *testing.T) {
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				v1beta1.DeploymentModeAnnotation: v1beta1.MMDeploymentModeVal,
+				DeploymentModeAnnotation: MMDeploymentModeVal,
 			},
 		},
 		Spec: v1beta1.InferenceServiceSpec{},
@@ -127,7 +127,7 @@ func TestBuildBasePredictorFromInferenceService_NonMM(t *testing.T) {
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{},
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				Model: &v1beta1.ModelSpec{
 					ModelFormat: v1beta1.ModelFormat{
 						Name: "foo",
@@ -146,11 +146,11 @@ func TestBuildBasePredictorFromInferenceService_BothSpecs(t *testing.T) {
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				v1beta1.DeploymentModeAnnotation: v1beta1.MMDeploymentModeVal,
+				DeploymentModeAnnotation: MMDeploymentModeVal,
 			},
 		},
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				Model: &v1beta1.ModelSpec{
 					ModelFormat: v1beta1.ModelFormat{
 						Name: "foo",
@@ -173,12 +173,12 @@ func TestBuildBasePredictorFromInferenceService_AnnotationWithModelSpec(t *testi
 	inferenceService := &v1beta1.InferenceService{
 		ObjectMeta: metav1.ObjectMeta{
 			Annotations: map[string]string{
-				v1beta1.DeploymentModeAnnotation: v1beta1.MMDeploymentModeVal,
-				v1beta1.RuntimeAnnotation:        runtimeName,
+				DeploymentModeAnnotation: MMDeploymentModeVal,
+				RuntimeAnnotation:        runtimeName,
 			},
 		},
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				Model: &v1beta1.ModelSpec{
 					ModelFormat: v1beta1.ModelFormat{
 						Name: "foo",
@@ -202,7 +202,7 @@ func TestProcessInferenceServiceStorage_Simple(t *testing.T) {
 	nname := types.NamespacedName{Name: "tm-test-model", Namespace: "modelmesh-serving"}
 	inferenceService := &v1beta1.InferenceService{
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				SKLearn: &v1beta1.PredictorExtensionSpec{
 					Storage: &common.StorageSpec{
 						StorageKey: &storageKey,
@@ -232,7 +232,7 @@ func TestProcessInferenceServiceStorage_S3UriProcessing(t *testing.T) {
 	nname := types.NamespacedName{Name: "tm-test-model", Namespace: "modelmesh-serving"}
 	inferenceService := &v1beta1.InferenceService{
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				SKLearn: &v1beta1.PredictorExtensionSpec{
 					StorageURI: &uri,
 				},
@@ -254,7 +254,7 @@ func TestProcessInferenceServiceStorage_OverlappingParameters(t *testing.T) {
 	nname := types.NamespacedName{Name: "tm-test-model", Namespace: "modelmesh-serving"}
 	inferenceService := &v1beta1.InferenceService{
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				SKLearn: &v1beta1.PredictorExtensionSpec{
 					StorageURI: strRef("s3://" + uriBucket + "/test-path"),
 					Storage: &common.StorageSpec{
@@ -278,7 +278,7 @@ func TestProcessInferenceServiceStorage_ErrorUriAndPath(t *testing.T) {
 	nname := types.NamespacedName{Name: "tm-test-model", Namespace: "modelmesh-serving"}
 	inferenceService := &v1beta1.InferenceService{
 		Spec: v1beta1.InferenceServiceSpec{
-			Predictor: v1beta1.InferenceServicePredictorSpec{
+			Predictor: v1beta1.PredictorSpec{
 				SKLearn: &v1beta1.PredictorExtensionSpec{
 					StorageURI: strRef("s3://test-bucket/test-path"),
 					Storage: &common.StorageSpec{

@@ -38,9 +38,9 @@ import (
 	"google.golang.org/grpc/codes"
 	grpcstatus "google.golang.org/grpc/status"
 
+	servingv1beta1 "github.com/kserve/kserve/pkg/apis/serving/v1beta1"
 	"github.com/kserve/modelmesh-serving/apis/serving/common"
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
-	servingv1beta1 "github.com/kserve/modelmesh-serving/apis/serving/v1beta1"
+	"github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 	mmeshapi "github.com/kserve/modelmesh-serving/generated/mmesh"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -225,7 +225,7 @@ func (pr *PredictorReconciler) ReconcilePredictor(ctx context.Context, nname typ
 
 // validatePredictor checks if there are incompatibilities in the spec
 // Returns a string describing the reason a Predictor is invalid, empty if valid.
-func validatePredictor(predictor *api.Predictor) string {
+func validatePredictor(predictor *v1alpha1.Predictor) string {
 	// if it exists, inspect and validate the storage specification
 	if predictor.Spec.Storage == nil {
 		return ""
@@ -255,10 +255,10 @@ func validatePredictor(predictor *api.Predictor) string {
 
 // passed in ModelInfo.Key field of registration requests
 type ModelKeyInfo struct {
-	StorageKey    *string           `json:"storage_key,omitempty"`
-	StorageParams map[string]string `json:"storage_params,omitempty"`
-	ModelType     *api.ModelType    `json:"model_type,omitempty"`
-	SchemaPath    *string           `json:"schema_path,omitempty"`
+	StorageKey    *string             `json:"storage_key,omitempty"`
+	StorageParams map[string]string   `json:"storage_params,omitempty"`
+	ModelType     *v1alpha1.ModelType `json:"model_type,omitempty"`
+	SchemaPath    *string             `json:"schema_path,omitempty"`
 }
 
 const (
@@ -307,7 +307,7 @@ func (pr *PredictorReconciler) handlePredictorNotFound(ctx context.Context,
 }
 
 func (pr *PredictorReconciler) setVModel(ctx context.Context, mmc mmeshapi.ModelMeshClient,
-	predictor *api.Predictor, loadNow bool, sourceId string) (*mmeshapi.VModelStatusInfo, error) {
+	predictor *v1alpha1.Predictor, loadNow bool, sourceId string) (*mmeshapi.VModelStatusInfo, error) {
 	spec := &predictor.Spec
 
 	setVmodelCtx, cancel := context.WithTimeout(ctx, GrpcRequestTimeout)
@@ -343,7 +343,7 @@ func (pr *PredictorReconciler) setVModel(ctx context.Context, mmc mmeshapi.Model
 
 // Extracts fields from the Predictor related to the Model to be loaded
 // Handles backwards compability of fields that have been changed/deprecated.
-func extractModelFields(predictor *api.Predictor) (path string, schemaPath, storageKey *string, storageParams map[string]string) {
+func extractModelFields(predictor *v1alpha1.Predictor) (path string, schemaPath, storageKey *string, storageParams map[string]string) {
 	// Storage itself is optional
 	if predictor.Spec.Storage == nil {
 		return
@@ -379,7 +379,7 @@ func extractModelFields(predictor *api.Predictor) (path string, schemaPath, stor
 }
 
 // Returns the model-mesh model name corresponding to a particular Predictor and sourceId
-func concreteModelName(predictor *api.Predictor, sourceId string) string {
+func concreteModelName(predictor *v1alpha1.Predictor, sourceId string) string {
 	return fmt.Sprintf("%s__%s-%s", predictor.Name, sourceId, Hash(&predictor.Spec))
 }
 
@@ -576,7 +576,7 @@ func isNoAddresses(err error) bool {
 }
 
 // Hash returns a 10-character hash string of the spec
-func Hash(predictorSpec *api.PredictorSpec) string {
+func Hash(predictorSpec *v1alpha1.PredictorSpec) string {
 	b, _ := json.Marshal(predictorSpec) //TODO check for things to exclude
 	hsha1 := sha1.Sum(b)
 	return hex.EncodeToString(hsha1[:5])
@@ -587,7 +587,7 @@ func Hash(predictorSpec *api.PredictorSpec) string {
 func (pr *PredictorReconciler) SetupWithManager(mgr ctrl.Manager, eventStream *mmesh.ModelMeshEventStream,
 	watchInferenceServices bool, sourcePluginEvents <-chan event.GenericEvent) error {
 	builder := ctrl.NewControllerManagedBy(mgr).
-		For(&api.Predictor{}).
+		For(&v1alpha1.Predictor{}).
 		Watches(&src.Channel{Source: eventStream.MMEvents}, &handler.EnqueueRequestForObject{})
 
 	if sourcePluginEvents != nil {

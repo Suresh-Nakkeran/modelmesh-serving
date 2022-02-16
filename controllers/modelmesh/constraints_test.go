@@ -16,7 +16,7 @@ package modelmesh
 import (
 	"testing"
 
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

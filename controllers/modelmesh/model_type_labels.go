@@ -16,7 +16,8 @@ package modelmesh
 import (
 	"sort"
 
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
+	"github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 )
 
 type StringSet map[string]struct{}
@@ -60,7 +61,7 @@ func GetServingRuntimeSupportedModelTypeLabelSet(rt *api.ServingRuntime) StringS
 	return set
 }
 
-func GetPredictorModelTypeLabel(p *api.Predictor) string {
+func GetPredictorModelTypeLabel(p *v1alpha1.Predictor) string {
 	runtime := p.Spec.Runtime
 	if runtime != nil && runtime.Name != "" {
 		// constrain placement to specific runtime

@@ -17,7 +17,8 @@ import (
 	"strings"
 	"testing"
 
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
+	"github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -80,14 +81,14 @@ func TestGetPredictorModelTypeLabel(t *testing.T) {
 	tableTests := []struct {
 		name          string
 		expectedLabel string
-		spec          api.PredictorSpec
+		spec          v1alpha1.PredictorSpec
 	}{
 		{
 			name:          "runtime ref",
 			expectedLabel: "rt:target-runtime",
-			spec: api.PredictorSpec{
-				Runtime: &api.PredictorRuntime{
-					RuntimeRef: &api.RuntimeRef{
+			spec: v1alpha1.PredictorSpec{
+				Runtime: &v1alpha1.PredictorRuntime{
+					RuntimeRef: &v1alpha1.RuntimeRef{
 						Name: "target-runtime",
 					},
 				},
@@ -96,9 +97,9 @@ func TestGetPredictorModelTypeLabel(t *testing.T) {
 		{
 			name:          "model type",
 			expectedLabel: "mt:type",
-			spec: api.PredictorSpec{
-				Model: api.Model{
-					Type: api.ModelType{
+			spec: v1alpha1.PredictorSpec{
+				Model: v1alpha1.Model{
+					Type: v1alpha1.ModelType{
 						Name: "type",
 					},
 				},
@@ -107,9 +108,9 @@ func TestGetPredictorModelTypeLabel(t *testing.T) {
 		{
 			name:          "model type with version",
 			expectedLabel: "mt:type2:8.3",
-			spec: api.PredictorSpec{
-				Model: api.Model{
-					Type: api.ModelType{
+			spec: v1alpha1.PredictorSpec{
+				Model: v1alpha1.Model{
+					Type: v1alpha1.ModelType{
 						Name:    "type2",
 						Version: &version,
 					},
@@ -120,7 +121,7 @@ func TestGetPredictorModelTypeLabel(t *testing.T) {
 
 	for _, tt := range tableTests {
 		t.Run(tt.name, func(t *testing.T) {
-			p := api.Predictor{
+			p := v1alpha1.Predictor{
 				Spec: tt.spec,
 			}
 			label := GetPredictorModelTypeLabel(&p)

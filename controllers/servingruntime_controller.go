@@ -54,8 +54,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
-	servingv1beta1 "github.com/kserve/modelmesh-serving/apis/serving/v1beta1"
+	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
+	servingv1beta1 "github.com/kserve/kserve/pkg/apis/serving/v1beta1"
+	"github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	"github.com/kserve/modelmesh-serving/controllers/modelmesh"
 )
 
@@ -225,7 +226,7 @@ func (r *ServingRuntimeReconciler) Reconcile(ctx context.Context, req ctrl.Reque
 	}
 
 	// if the runtime is disabled, delete the deployment
-	if rt.Disabled() || !rt.IsMultiModelRuntime() || !mmEnabled {
+	if rt.Spec.IsDisabled() || !rt.Spec.IsMultiModelRuntime() || !mmEnabled {
 		log.Info("Runtime is disabled, incompatible with modelmesh, or namespace is not modelmesh-enabled")
 		if err = mmDeployment.Delete(ctx, r.Client); err != nil {
 			return ctrl.Result{}, fmt.Errorf("could not delete the model mesh deployment: %w", err)
@@ -350,7 +351,7 @@ func (r *ServingRuntimeReconciler) determineReplicas(rt *api.ServingRuntime) uin
 
 // runtimeHasPredictors returns true if the runtime supports an existing Predictor
 func (r *ServingRuntimeReconciler) runtimeHasPredictors(ctx context.Context, rt *api.ServingRuntime) (bool, error) {
-	f := func(p *api.Predictor) bool {
+	f := func(p *v1alpha1.Predictor) bool {
 		return runtimeSupportsPredictor(rt, p)
 	}
 
@@ -362,7 +363,7 @@ func (r *ServingRuntimeReconciler) runtimeHasPredictors(ctx context.Context, rt 
 	return false, nil
 }
 
-func runtimeSupportsPredictor(rt *api.ServingRuntime, p *api.Predictor) bool {
+func runtimeSupportsPredictor(rt *api.ServingRuntime, p *v1alpha1.Predictor) bool {
 	// assignment to a runtime depends on the model type labels
 	runtimeLabelSet := modelmesh.GetServingRuntimeSupportedModelTypeLabelSet(rt)
 	predictorLabel := modelmesh.GetPredictorModelTypeLabel(p)
@@ -374,7 +375,7 @@ func runtimeSupportsPredictor(rt *api.ServingRuntime, p *api.Predictor) bool {
 // getRuntimesSupportingPredictor returns a list of keys for runtimes that support the predictor p
 //
 // A predictor may be supported by multiple runtimes.
-func (r *ServingRuntimeReconciler) getRuntimesSupportingPredictor(ctx context.Context, p *api.Predictor) ([]types.NamespacedName, error) {
+func (r *ServingRuntimeReconciler) getRuntimesSupportingPredictor(ctx context.Context, p *v1alpha1.Predictor) ([]types.NamespacedName, error) {
 	// list all runtimes
 	runtimes := &api.ServingRuntimeList{}
 	if err := r.Client.List(ctx, runtimes, client.InNamespace(p.Namespace)); err != nil {
@@ -384,7 +385,7 @@ func (r *ServingRuntimeReconciler) getRuntimesSupportingPredictor(ctx context.Co
 	srnns := make([]types.NamespacedName, 0, len(runtimes.Items))
 	for i := range runtimes.Items {
 		rt := &runtimes.Items[i]
-		if rt.IsMultiModelRuntime() && runtimeSupportsPredictor(rt, p) {
+		if rt.Spec.IsMultiModelRuntime() && runtimeSupportsPredictor(rt, p) {
 			srnns = append(srnns, types.NamespacedName{
 				Name:      rt.GetName(),
 				Namespace: p.Namespace,
@@ -411,9 +412,9 @@ func (r *ServingRuntimeReconciler) SetupWithManager(mgr ctrl.Manager,
 				})
 			}, r.ConfigProvider, &r.Client)).
 		// watch predictors and reconcile the corresponding runtime(s) it could be assigned to
-		Watches(&source.Kind{Type: &api.Predictor{}},
+		Watches(&source.Kind{Type: &v1alpha1.Predictor{}},
 			handler.EnqueueRequestsFromMapFunc(func(o client.Object) []reconcile.Request {
-				return r.runtimeRequestsForPredictor(o.(*api.Predictor), "Predictor")
+				return r.runtimeRequestsForPredictor(o.(*v1alpha1.Predictor), "Predictor")
 			}))
 
 	if r.HasNamespaceAccess {
@@ -474,7 +475,7 @@ func (r *ServingRuntimeReconciler) requestsForRuntimes(namespace string,
 	return requests
 }
 
-func (r *ServingRuntimeReconciler) runtimeRequestsForPredictor(p *api.Predictor, source string) []reconcile.Request {
+func (r *ServingRuntimeReconciler) runtimeRequestsForPredictor(p *v1alpha1.Predictor, source string) []reconcile.Request {
 	srnns, err := r.getRuntimesSupportingPredictor(context.TODO(), p)
 	if err != nil {
 		r.Log.Error(err, "Error getting runtimes that support predictor", "name", p.GetName(), "source", source)

@@ -62,7 +62,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	"sigs.k8s.io/yaml"
 
-	api "github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
+	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
+	"github.com/kserve/modelmesh-serving/apis/serving/v1alpha1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	// +kubebuilder:scaffold:imports
 )
@@ -207,7 +208,7 @@ var _ = AfterEach(func() {
 	err = k8sClient.DeleteAllOf(context.TODO(), &api.ServingRuntime{}, inNamespace)
 	Expect(err).ToNot(HaveOccurred())
 	// Predictors
-	err = k8sClient.DeleteAllOf(context.TODO(), &api.Predictor{}, inNamespace)
+	err = k8sClient.DeleteAllOf(context.TODO(), &v1alpha1.Predictor{}, inNamespace)
 	Expect(err).ToNot(HaveOccurred())
 })
 

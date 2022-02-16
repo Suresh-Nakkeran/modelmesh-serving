@@ -11,27 +11,12 @@
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-package modelmesh
+package predictor_source
 
-import (
-	"testing"
-
-	api "github.com/kserve/kserve/pkg/apis/serving/v1alpha1"
-	appsv1 "k8s.io/api/apps/v1"
-	corev1 "k8s.io/api/core/v1"
+const (
+	SecretKeyAnnotation      = "serving.kserve.io/secretKey"
+	DeploymentModeAnnotation = "serving.kserve.io/deploymentMode"
+	SchemaPathAnnotation     = "serving.kserve.io/schemaPath"
+	RuntimeAnnotation        = "serving.kserve.io/servingRuntime"
+	MMDeploymentModeVal      = "ModelMesh"
 )
-
-func TestPuller(t *testing.T) {
-	portURI := "port:9103"
-	rt := &api.ServingRuntime{
-		Spec: api.ServingRuntimeSpec{
-			GrpcMultiModelManagementEndpoint: &portURI,
-		},
-	}
-	deployment := &appsv1.Deployment{}
-
-	err := addPullerSidecar(rt, deployment, "", nil, &corev1.ResourceRequirements{})
-	if err != nil {
-		t.Fatal(err)
-	}
-}
